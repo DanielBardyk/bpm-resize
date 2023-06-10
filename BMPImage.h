@@ -13,11 +13,11 @@ using namespace std;
 class BMPImage {
 private:
 	vector<vector<PIXELDATA>> pixels;
-	BMPParser *bmpParser;
-	BMPHEAD fileHeaders;
+	BMPParser *BPMParser;
+	BMPHEAD fHeaders;
 
 public:
-	void read(string& fname);
-	void save(string& fname);
+	void read(const string& fname);
 	void resize(double fname);
+	void save(const string& fname);
 };

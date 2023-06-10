@@ -1,6 +1,6 @@
 #include "BMPImage.h"
 
-void BMPImage::read(string& fname) 
+void BMPImage::read(const string& fname) 
 {
 	ifstream file(fname, ios::binary);
 	if(!file.is_open())
@@ -8,19 +8,19 @@ void BMPImage::read(string& fname)
 		throw runtime_error("Cannot open the file " + fname);
 	}
 
-	bmpParser->parseBMP(fname);
+	BPMParser->parseBMP(fname);
 
-	file.read((char *)(&fileHeaders), sizeof(fileHeaders));
+	file.read((char *)(&fHeaders), sizeof(fHeaders));
 
-	file.seekg(fileHeaders.headersize);
+	file.seekg(fHeaders.headersize);
 
-	const int padding = ((4 - (fileHeaders.width * 3) % 4) % 4);
+	const int padding = ((4 - (fHeaders.width * 3) % 4) % 4);
 
-	for (int i = 0; i < fileHeaders.depth; i++)
+	for (int i = 0; i < fHeaders.depth; i++)
 	{
 		PIXELDATA pixel;
 		vector<PIXELDATA> row;
-		for (int j = 0; j < this->fileHeaders.width; j++)
+		for (int j = 0; j < this->fHeaders.width; j++)
 		{
 			file.read((char *)(&pixel), sizeof(pixel));
 			row.push_back(pixel);
@@ -34,8 +34,8 @@ void BMPImage::read(string& fname)
 
 void BMPImage::resize(double scaleFactor)
 {
-	int resizedWidth = this->fileHeaders.width * scaleFactor;
-	int resizedDepth = this->fileHeaders.depth * scaleFactor;
+	int resizedWidth = this->fHeaders.width * scaleFactor;
+	int resizedDepth = this->fHeaders.depth * scaleFactor;
 
 	vector<vector<PIXELDATA>> newPixels(resizedDepth, vector<PIXELDATA>(resizedWidth));
 
@@ -52,14 +52,14 @@ void BMPImage::resize(double scaleFactor)
 		}
 	}
 
-	this->fileHeaders.filesize = sizeof(this->fileHeaders) + sizeof(this->pixels);
-	this->fileHeaders.width = resizedWidth;
-	this->fileHeaders.depth = resizedDepth;
+	this->fHeaders.filesize = sizeof(this->fHeaders) + sizeof(this->pixels);
+	this->fHeaders.width = resizedWidth;
+	this->fHeaders.depth = resizedDepth;
 
 	this->pixels = newPixels;
 }
 
-void BMPImage::save(string& fname)
+void BMPImage::save(const string& fname)
 {
 	ofstream file(fname, ios::out | ios::binary);
 	if(!file.is_open())
@@ -67,12 +67,12 @@ void BMPImage::save(string& fname)
 		throw runtime_error("Cannot open the file " + fname);
 	}
 
-	fileHeaders.headersize = 54L;
-	fileHeaders.infoSize = 40L;
+	fHeaders.headersize = 54L;
+	fHeaders.infoSize = 40L;
 
-	file.write((char *)(&fileHeaders), sizeof(fileHeaders));
+	file.write((char *)(&fHeaders), sizeof(fHeaders));
 
-	const int padding = (4 - (3 * fileHeaders.width % 4)) % 4;
+	const int padding = (4 - (3 * fHeaders.width % 4)) % 4;
 	for (int i = 0; i < pixels.size(); i++)
 	{
 		vector<PIXELDATA>& row = pixels[i];
